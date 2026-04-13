@@ -69,7 +69,7 @@ public class PingSchedulerService {
         return true;
     }
 
-    @Scheduled(fixedDelay = 30000) // runs every 30 seconds
+    @Scheduled(fixedDelay = 45000) // runs every 45 seconds
     public void pingAllEndpoints() {
         List<MonitoredEndpoint> endpoints = endpointRepo.findAllByActiveTrue();
         log.info("Pinging {} endpoints...", endpoints.size());

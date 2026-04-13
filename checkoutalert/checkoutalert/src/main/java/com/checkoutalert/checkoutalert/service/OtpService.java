@@ -69,15 +69,15 @@ public class OtpService {
 
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(email);
-        message.setSubject("CheckoutWatch — Your OTP");
+        message.setSubject("CheckoutAlert — Your OTP");
         message.setText(
-                "Your OTP for CheckoutWatch " +
+                "Your OTP for CheckoutAlert " +
                         (purpose.equals("REGISTER") ? "registration" : "login") + " is:\n\n" +
                         otp + "\n\n" +
                         "This OTP expires in 5 minutes.\n" +
                         "Do not share this with anyone.\n\n" +
                         "If you did not request this, ignore this email.\n\n" +
-                        "— CheckoutWatch"
+                        "— CheckoutAlert"
         );
         mailSender.send(message);
     }
