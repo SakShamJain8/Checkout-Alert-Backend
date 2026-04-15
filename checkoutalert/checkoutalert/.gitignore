@@ -20,7 +20,7 @@ target/
 *.ipr
 
 # application properties with secrets
-application.properties
+
 application-local.properties
 
 # environment files
