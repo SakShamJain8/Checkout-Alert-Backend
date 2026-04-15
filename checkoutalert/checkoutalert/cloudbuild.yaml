@@ -33,7 +33,7 @@ steps:
         '--min-instances', '1',
 
         '--set-env-vars',
-        'SPRING_DATASOURCE_USERNAME=root,SPRING_DATA_REDIS_PORT=6379,SPRING_MAIL_HOST=smtp.gmail.com,SPRING_MAIL_PORT=587,SPRING_DATASOURCE_URL=jdbc:mysql://YOUR_SQL_IP:3306/checkoutalert,SPRING_DATA_REDIS_HOST=10.x.x.x,SPRING_MAIL_USERNAME=your@gmail.com',
+        'SPRING_DATASOURCE_USERNAME=root,SPRING_DATA_REDIS_PORT=6379,SPRING_MAIL_HOST=smtp.gmail.com,SPRING_MAIL_PORT=587,SPRING_DATASOURCE_URL=jdbc:mysql://YOUR_SQL_IP:3306/checkoutalert,SPRING_DATA_REDIS_HOST=10.x.x.x,SPRING_MAIL_USERNAME=checkoutalertt@gmail.com',
 
         '--set-secrets',
         'SPRING_DATASOURCE_PASSWORD=db-password:latest,SPRING_DATA_REDIS_PASSWORD=redis-password:latest,SPRING_MAIL_PASSWORD=mail-password:latest,GEMINI_API_KEY=gemini-key:latest,JWT_SECRET=jwt-secret:latest,ADMIN_SECRET=admin-secret:latest'
