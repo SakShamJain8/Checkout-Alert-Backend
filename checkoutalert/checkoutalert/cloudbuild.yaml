@@ -13,9 +13,8 @@ steps:
       - '-t'
       - 'gcr.io/$PROJECT_ID/checkoutalert:$SHORT_SHA'
       - '-f'
-      - './Dockerfile'   
-      - '.'
-    dir: 'checkoutalert/checkoutalert'
+      - 'checkoutalert/checkoutalert/Dockerfile'
+      - 'checkoutalert/checkoutalert'
 
   # Step 2: Push to Google Container Registry
   - name: 'gcr.io/cloud-builders/docker'
