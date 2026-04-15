@@ -10,7 +10,7 @@ import java.util.List;
 @Service
 public class BaselineCacheService {
     private final RedisTemplate<String, String> redisTemplate;
-    public BaselineCacheService(RedisTemplate<String, String> redisTemplate) {
+    public BaselineCacheService(@Autowired(required = false) RedisTemplate<String, String> redisTemplate) {
         this.redisTemplate = redisTemplate;
     }
     private static final int WINDOW_SIZE = 20; // keep last 20 latencies per endpoint

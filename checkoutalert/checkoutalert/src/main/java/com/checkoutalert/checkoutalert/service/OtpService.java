@@ -24,7 +24,7 @@ public class OtpService {
 
     public OtpService(OtpTokenRepository otpRepo,
                       @Autowired(required = false) JavaMailSender mailSender,
-                      RedisTemplate<String, String> redisTemplate) {
+                      @Autowired(required = false) RedisTemplate<String, String> redisTemplate) {
         this.otpRepo = otpRepo;
         this.mailSender = mailSender;
         this.redisTemplate = redisTemplate;

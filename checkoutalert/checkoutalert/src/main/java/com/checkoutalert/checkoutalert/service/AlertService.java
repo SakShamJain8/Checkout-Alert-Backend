@@ -20,7 +20,7 @@ public class AlertService {
     private final IncidentRepository incidentRepo;
 
     public AlertService(@Autowired(required = false) JavaMailSender mailSender,
-                        RedisTemplate<String, String> redisTemplate,
+                        @Autowired(required = false) RedisTemplate<String, String> redisTemplate,
                         GeminiService geminiService,
                         IncidentRepository incidentRepo) {
         this.mailSender = mailSender;
