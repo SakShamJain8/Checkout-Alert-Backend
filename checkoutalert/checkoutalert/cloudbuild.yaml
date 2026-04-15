@@ -13,17 +13,3 @@ steps:
     args:
       - 'push'
       - 'gcr.io/$PROJECT_ID/checkoutalert'
-
-  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-    entrypoint: gcloud
-    args:
-      - 'run'
-      - 'deploy'
-      - 'checkoutalert'
-      - '--image'
-      - 'gcr.io/$PROJECT_ID/checkoutalert'
-      - '--region'
-      - 'asia-south1'
-      - '--platform'
-      - 'managed'
-      - '--allow-unauthenticated'
