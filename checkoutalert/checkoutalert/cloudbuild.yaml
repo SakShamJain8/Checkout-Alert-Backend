@@ -3,13 +3,14 @@ options:
 
 steps:
   - name: 'gcr.io/cloud-builders/docker'
-    dir: 'checkoutalert/checkoutalert'
     args:
       - 'build'
-      - '--no-cache' 
+      - '--no-cache'
+      - '-f'
+      - 'checkoutalert/checkoutalert/Dockerfile'   
       - '-t'
       - 'gcr.io/$PROJECT_ID/checkoutalert'
-      - '.'
+      - 'checkoutalert/checkoutalert'              
 
   - name: 'gcr.io/cloud-builders/docker'
     args:
