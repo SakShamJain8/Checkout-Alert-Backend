@@ -1,15 +1,43 @@
-options:
-  logging: CLOUD_LOGGING_ONLY
-
 steps:
+  # 1. Build Docker image (from nested project folder)
   - name: 'gcr.io/cloud-builders/docker'
-    args:
-      - 'build'
-      - '-t'
-      - 'gcr.io/$PROJECT_ID/checkoutalert'
-      - 'checkoutalert/checkoutalert'
+    dir: 'checkoutalert/checkoutalert'
+    args: [
+      'build',
+      '-t',
+      'gcr.io/$PROJECT_ID/checkout-alert-backend',
+      '.'
+    ]
 
+  # 2. Push image
   - name: 'gcr.io/cloud-builders/docker'
+    args: [
+      'push',
+      'gcr.io/$PROJECT_ID/checkout-alert-backend'
+    ]
+
+  # 3. Deploy to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
     args:
-      - 'push'
-      - 'gcr.io/$PROJECT_ID/checkoutalert'
+      [
+        'run', 'deploy', 'checkout-alert-backend',
+        '--image', 'gcr.io/$PROJECT_ID/checkout-alert-backend',
+        '--region', 'asia-south2',
+        '--platform', 'managed',
+        '--allow-unauthenticated',
+
+        '--vpc-connector', 'redis-connector',
+        '--vpc-egress', 'all',
+
+        '--min-instances', '1',
+
+        '--set-env-vars',
+        'SPRING_DATASOURCE_USERNAME=root,SPRING_DATA_REDIS_PORT=6379,SPRING_MAIL_HOST=smtp.gmail.com,SPRING_MAIL_PORT=587',
+
+        '--set-secrets',
+        'SPRING_DATASOURCE_URL=sql-url:latest,SPRING_DATASOURCE_PASSWORD=db-password:latest,SPRING_DATA_REDIS_HOST=redis-host:latest,SPRING_DATA_REDIS_PASSWORD=redis-password:latest,SPRING_MAIL_USERNAME=mail-username:latest,SPRING_MAIL_PASSWORD=mail-password:latest,GEMINI_API_KEY=gemini-key:latest,JWT_SECRET=jwt-secret:latest,ADMIN_SECRET=admin-secret:latest'
+      ]
+
+images:
+  - 'gcr.io/$PROJECT_ID/checkout-alert-backend'
