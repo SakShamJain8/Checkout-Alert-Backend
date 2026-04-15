@@ -2,6 +2,7 @@ package com.checkoutalert.checkoutalert.service;
 
 import com.checkoutalert.checkoutalert.model.OtpToken;
 import com.checkoutalert.checkoutalert.repository.OtpTokenRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
