@@ -14,38 +14,48 @@ import java.time.LocalDateTime;
 @Service
 public class AlertService {
 
-    private final JavaMailSender mailSender;
-    private final RedisTemplate<String, String> redisTemplate;
+    private JavaMailSender mailSender;
+    private RedisTemplate<String, String> redisTemplate;
+
     private final GeminiService geminiService;
     private final IncidentRepository incidentRepo;
 
-    public AlertService(@Autowired(required = false) JavaMailSender mailSender,
-                        @Autowired(required = false) RedisTemplate<String, String> redisTemplate,
-                        GeminiService geminiService,
+    public AlertService(GeminiService geminiService,
                         IncidentRepository incidentRepo) {
-        this.mailSender = mailSender;
-        this.redisTemplate = redisTemplate;
         this.geminiService = geminiService;
         this.incidentRepo = incidentRepo;
     }
 
+    // OPTIONAL INJECTION (SAFE)
+    @Autowired(required = false)
+    public void setMailSender(JavaMailSender mailSender) {
+        this.mailSender = mailSender;
+    }
+
+    @Autowired(required = false)
+    public void setRedisTemplate(RedisTemplate<String, String> redisTemplate) {
+        this.redisTemplate = redisTemplate;
+    }
+
     private boolean isRateLimited(String endpointId) {
+        if (redisTemplate == null) return false; // 🔥 prevent crash
+
         String key = "alert_sent:" + endpointId;
         Boolean exists = redisTemplate.hasKey(key);
         if (Boolean.TRUE.equals(exists)) return true;
+
         redisTemplate.opsForValue().set(key, "1", Duration.ofMinutes(10));
         return false;
     }
 
     public void sendAlert(MonitoredEndpoint endpoint, long latencyMs,
                           int statusCode, double baseline) {
-        // get Gemini diagnosis
+
         String diagnosis = geminiService.getPossibleCause(
                 endpoint.getName(), endpoint.getUrl(),
                 latencyMs, baseline, statusCode
         );
 
-        // always save incident to DB regardless of rate limit
         Incident incident = new Incident();
         incident.setEndpointId(endpoint.getId());
         incident.setEndpointName(endpoint.getName());
@@ -56,29 +66,17 @@ public class AlertService {
         incident.setGeminiDiagnosis(diagnosis);
         incident.setDetectedAt(LocalDateTime.now());
         incident.setUserId(endpoint.getUserId());
+
         incidentRepo.save(incident);
 
-        // rate limit only the email — not the DB save
         if (isRateLimited(endpoint.getId())) return;
 
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(endpoint.getAlertEmail());
-        message.setSubject("🚨 CheckoutAlert — " + endpoint.getName() + " is DOWN");
-        message.setText(
-                "━━━━━━━━━━━━━━━━━━━━━━\n" +
-                        "CHECKOUTALERT\n" +
-                        "━━━━━━━━━━━━━━━━━━━━━━\n\n" +
-                        "Endpoint : " + endpoint.getName() + "\n" +
-                        "URL      : " + endpoint.getUrl() + "\n" +
-                        "Status   : " + statusCode +
-                        " (expected " + endpoint.getExpectedStatus() + ")\n" +
-                        "Latency  : " + latencyMs + "ms" +
-                        (baseline > 0 ? " (normal: " + (int) baseline + "ms)" : "") + "\n" +
-                        "Time     : " + LocalDateTime.now() + "\n\n" +
-                        "Possible cause:\n" + diagnosis + "\n\n" +
-                        "━━━━━━━━━━━━━━━━━━━━━━\n" +
-                        "Sent via CheckoutAlert\n"
-        );
-        mailSender.send(message);
+        if (mailSender != null) {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setTo(endpoint.getAlertEmail());
+            message.setSubject("🚨 CheckoutAlert — " + endpoint.getName() + " is DOWN");
+            message.setText("Alert triggered...");
+            mailSender.send(message);
+        }
     }
 }
