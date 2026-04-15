@@ -19,7 +19,7 @@ public class AlertService {
     private final GeminiService geminiService;
     private final IncidentRepository incidentRepo;
 
-    public AlertService(JavaMailSender mailSender,
+    public AlertService(@Autowired(required = false) JavaMailSender mailSender,
                         RedisTemplate<String, String> redisTemplate,
                         GeminiService geminiService,
                         IncidentRepository incidentRepo) {

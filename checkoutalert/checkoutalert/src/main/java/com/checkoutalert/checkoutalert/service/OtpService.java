@@ -23,7 +23,7 @@ public class OtpService {
     private final SecureRandom secureRandom = new SecureRandom();
 
     public OtpService(OtpTokenRepository otpRepo,
-                      JavaMailSender mailSender,
+                      @Autowired(required = false) JavaMailSender mailSender,
                       RedisTemplate<String, String> redisTemplate) {
         this.otpRepo = otpRepo;
         this.mailSender = mailSender;
