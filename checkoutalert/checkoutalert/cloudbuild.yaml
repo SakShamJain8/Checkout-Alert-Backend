@@ -6,11 +6,11 @@ steps:
     args:
       - 'build'
       - '--no-cache'
-      - '-f'
-      - 'checkoutalert/checkoutalert/Dockerfile'   
       - '-t'
       - 'gcr.io/$PROJECT_ID/checkoutalert'
-      - 'checkoutalert/checkoutalert'              
+      - '-f'
+      - 'checkoutalert/checkoutalert/Dockerfile'
+      - 'checkoutalert/checkoutalert'   
 
   - name: 'gcr.io/cloud-builders/docker'
     args:
