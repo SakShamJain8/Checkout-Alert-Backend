@@ -28,7 +28,7 @@ steps:
         '--allow-unauthenticated',
 
         '--vpc-connector', 'redis-connector',
-        '--vpc-egress', 'all',
+        '--vpc-egress', 'private-ranges-only',
 
         '--min-instances', '1',
 
