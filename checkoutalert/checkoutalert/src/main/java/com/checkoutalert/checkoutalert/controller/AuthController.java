@@ -61,37 +61,41 @@ public class AuthController {
     public ResponseEntity<?> registerSendOtp(
             @RequestBody Map<String, String> body,
             HttpServletRequest request) {
-        String ip = getClientIp(request);
-
-        if (otpService.isSendRateLimited(ip)) {
-            return ResponseEntity.status(429)
-                    .body("Too many OTP requests. Try again in an hour.");
-        }
-
-        String email = body.get("email");
-        String password = body.get("password");
-
-        if (email == null || password == null) {
-            return ResponseEntity.badRequest()
-                    .body("Email and password required");
-        }
-
-        if (password.length() < 8) {
-            return ResponseEntity.badRequest()
-                    .body("Password must be at least 8 characters");
-        }
-
         try {
+            String ip = getClientIp(request);
+
+            if (otpService.isSendRateLimited(ip)) {
+                return ResponseEntity.status(429)
+                        .body("Too many OTP requests. Try again in an hour.");
+            }
+
+            String email = body.get("email");
+            String password = body.get("password");
+
+            if (email == null || password == null) {
+                return ResponseEntity.badRequest()
+                        .body("Email and password required");
+            }
+
+            if (password.length() < 8) {
+                return ResponseEntity.badRequest()
+                        .body("Password must be at least 8 characters");
+            }
+
             if (!userRepo.existsByEmail(email)) {
                 otpService.sendOtp(email, "REGISTER");
             }
-        } catch (RuntimeException e) {
-        }
 
-        // same response regardless — attacker can't tell the difference
-        return ResponseEntity.ok(Map.of(
-                "message", "If this email is available, an OTP has been sent."
-        ));
+            // same response regardless — attacker can't tell the difference
+            return ResponseEntity.ok(Map.of(
+                    "message", "If this email is available, an OTP has been sent."
+            ));
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.err.println("Registration error: " + e.getMessage());
+            return ResponseEntity.status(500)
+                    .body("Internal server error: " + e.getMessage());
+        }
     }
 
     @PostMapping("/register/verify-otp")
