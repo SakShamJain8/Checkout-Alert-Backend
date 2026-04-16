@@ -81,7 +81,21 @@ public class AlertService {
             SimpleMailMessage message = new SimpleMailMessage();
             message.setTo(endpoint.getAlertEmail());
             message.setSubject("🚨 CheckoutAlert — " + endpoint.getName() + " is DOWN");
-            message.setText("Alert triggered...");
+            message.setText(
+                    "━━━━━━━━━━━━━━━━━━━━━━\n" +
+                            "CHECKOUTALERT\n" +
+                            "━━━━━━━━━━━━━━━━━━━━━━\n\n" +
+                            "Endpoint : " + endpoint.getName() + "\n" +
+                            "URL      : " + endpoint.getUrl() + "\n" +
+                            "Status   : " + statusCode +
+                            " (expected " + endpoint.getExpectedStatus() + ")\n" +
+                            "Latency  : " + latencyMs + "ms" +
+                            (baseline > 0 ? " (normal: " + (int) baseline + "ms)" : "") + "\n" +
+                            "Time     : " + LocalDateTime.now() + "\n\n" +
+                            "Possible cause:\n" + diagnosis + "\n\n" +
+                            "━━━━━━━━━━━━━━━━━━━━━━\n" +
+                            "Sent via CheckoutAlert\n"
+            );
             mailSender.send(message);
         }
     }
