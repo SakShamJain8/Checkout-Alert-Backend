@@ -38,27 +38,37 @@ public class OtpService {
     }
 
     public boolean isSendRateLimited(String ipAddress) {
-        if (redisTemplate == null) return false; // 🔥 prevent crash
+        if (redisTemplate == null) return false;
 
-        String key = "otp_send:ip:" + ipAddress;
-        Long attempts = redisTemplate.opsForValue().increment(key);
+        try {
+            String key = "otp_send:ip:" + ipAddress;
+            Long attempts = redisTemplate.opsForValue().increment(key);
 
-        if (attempts != null && attempts == 1) {
-            redisTemplate.expire(key, Duration.ofHours(1));
+            if (attempts != null && attempts == 1) {
+                redisTemplate.expire(key, Duration.ofHours(1));
+            }
+            return attempts != null && attempts > 10;
+        } catch (Exception e) {
+            // Redis unavailable - allow request to proceed
+            return false;
         }
-        return attempts != null && attempts > 10;
     }
 
     public boolean isDailyLimitReached(String email) {
         if (redisTemplate == null) return false;
 
-        String key = "otp_daily:" + email;
-        Long count = redisTemplate.opsForValue().increment(key);
+        try {
+            String key = "otp_daily:" + email;
+            Long count = redisTemplate.opsForValue().increment(key);
 
-        if (count != null && count == 1) {
-            redisTemplate.expire(key, Duration.ofHours(24));
+            if (count != null && count == 1) {
+                redisTemplate.expire(key, Duration.ofHours(24));
+            }
+            return count != null && count > 7;
+        } catch (Exception e) {
+            // Redis unavailable - allow request to proceed
+            return false;
         }
-        return count != null && count > 7;
     }
 
     public void sendOtp(String email, String purpose) {
@@ -94,28 +104,37 @@ public class OtpService {
     private boolean isRateLimited(String email, String ipAddress) {
         if (redisTemplate == null) return false;
 
-        String emailKey = "otp_attempts:email:" + email;
-        Long emailAttempts = redisTemplate.opsForValue().increment(emailKey);
+        try {
+            String emailKey = "otp_attempts:email:" + email;
+            Long emailAttempts = redisTemplate.opsForValue().increment(emailKey);
 
-        if (emailAttempts != null && emailAttempts == 1) {
-            redisTemplate.expire(emailKey, Duration.ofMinutes(15));
+            if (emailAttempts != null && emailAttempts == 1) {
+                redisTemplate.expire(emailKey, Duration.ofMinutes(15));
+            }
+            if (emailAttempts != null && emailAttempts > 5) return true;
+
+            String ipKey = "otp_attempts:ip:" + ipAddress;
+            Long ipAttempts = redisTemplate.opsForValue().increment(ipKey);
+
+            if (ipAttempts != null && ipAttempts == 1) {
+                redisTemplate.expire(ipKey, Duration.ofMinutes(45));
+            }
+            return ipAttempts != null && ipAttempts > 20;
+        } catch (Exception e) {
+            // Redis unavailable - allow request to proceed
+            return false;
         }
-        if (emailAttempts != null && emailAttempts > 5) return true;
-
-        String ipKey = "otp_attempts:ip:" + ipAddress;
-        Long ipAttempts = redisTemplate.opsForValue().increment(ipKey);
-
-        if (ipAttempts != null && ipAttempts == 1) {
-            redisTemplate.expire(ipKey, Duration.ofMinutes(45));
-        }
-        return ipAttempts != null && ipAttempts > 20;
     }
 
     private void resetRateLimit(String email, String ipAddress) {
         if (redisTemplate == null) return;
 
-        redisTemplate.delete("otp_attempts:email:" + email);
-        redisTemplate.delete("otp_attempts:ip:" + ipAddress);
+        try {
+            redisTemplate.delete("otp_attempts:email:" + email);
+            redisTemplate.delete("otp_attempts:ip:" + ipAddress);
+        } catch (Exception e) {
+            // Redis unavailable - silently ignore
+        }
     }
 
     public VerifyResult verifyOtp(String email, String otp, String purpose, String ipAddress) {

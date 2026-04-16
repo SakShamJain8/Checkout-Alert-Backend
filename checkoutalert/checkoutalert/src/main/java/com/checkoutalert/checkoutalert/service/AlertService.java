@@ -39,14 +39,19 @@ public class AlertService {
     }
 
     private boolean isRateLimited(String endpointId) {
-        if (redisTemplate == null) return false; // 🔥 prevent crash
+        if (redisTemplate == null) return false;
 
-        String key = "alert_sent:" + endpointId;
-        Boolean exists = redisTemplate.hasKey(key);
-        if (Boolean.TRUE.equals(exists)) return true;
+        try {
+            String key = "alert_sent:" + endpointId;
+            Boolean exists = redisTemplate.hasKey(key);
+            if (Boolean.TRUE.equals(exists)) return true;
 
-        redisTemplate.opsForValue().set(key, "1", Duration.ofMinutes(10));
-        return false;
+            redisTemplate.opsForValue().set(key, "1", Duration.ofMinutes(10));
+            return false;
+        } catch (Exception e) {
+            // Redis unavailable - allow alert to proceed
+            return false;
+        }
     }
 
     public void sendAlert(MonitoredEndpoint endpoint, long latencyMs,
